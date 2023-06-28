@@ -1,0 +1,48 @@
+#app.py
+
+from enum import Enum
+
+class HttpMethod(Enum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+    PATCH = "PATCH"
+    OPTIONS = "OPTIONS"
+    HEAD = "HEAD"
+
+from robyn import Router
+
+class Router(Router):
+    def inject_get(self, route: str):
+        def decorator(func):
+            self.add_route(HttpMethod.GET, route, func, False, None)
+            return func
+        return decorator
+
+    def inject_post(self, route: str):
+        def decorator(func):
+            self.add_route(HttpMethod.POST, route, func, False, None)
+            return func
+        return decorator
+
+# Instantiate the modified Router
+router = Router()
+
+# Register GET route using inject_get
+@router.inject_get("/hello")
+def hello_world():
+    return "Hello, World!"
+
+# Register POST route using inject_post
+@router.inject_post("/submit")
+def submit_form():
+    # Handle form submission logic
+    return "Form submitted successfully"
+
+# Get the registered routes
+registered_routes = router.get_routes()
+
+# Print the registered routes
+for route in registered_routes:
+    print(route)
