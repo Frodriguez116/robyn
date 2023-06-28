@@ -1,0 +1,13 @@
+#place in app.py
+from url_helpers import URLHelpers
+
+# Create an instance of the URLHelpers class
+url_helpers = URLHelpers()
+
+# Generate a file path using the url_for method
+static_folder = 'images'
+filename = 'example.jpg'
+file_path = url_helpers.url_for(static_folder, filename, width=800, height=600)
+
+# Print the generated file path
+print(file_path)
