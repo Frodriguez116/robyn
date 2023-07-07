@@ -1,0 +1,165 @@
+App.py--
+
+"""
+from robyn import Robyn
+
+# Create your application instance
+app = Robyn(__file__)
+
+# Define a custom dependency to simulate a database
+class Database:
+    def __init__(self):
+        self.data = []  # Array to store database records
+
+    def insert(self, record):
+        self.data.append(record)
+
+    def get_all(self):
+        return self.data
+
+# Inject the custom dependency into the application
+database = Database()
+app.inject_dependency("db", database)
+
+# Define a route handler that uses the injected database
+@app.get("/example")
+def example_handler(request):
+    # Access the injected database dependency
+    db = app.get_dependency("db")
+
+    # Insert a record into the database
+    record = {"id": 1, "name": "John Doe"}
+    db.insert(record)
+
+    # Retrieve all records from the database
+    all_records = db.get_all()
+
+    return str(all_records)
+
+# Start the application
+app.start()
+
+"""
+#--------------------------------------------------------------------------------------------------------------------------
+"""
+from robyn import Robyn
+
+# Create your application instance
+app = Robyn(__file__)
+
+# Define a custom dependency to simulate a database
+def dependency1():
+    return "Resp"
+    
+
+# Inject the custom dependency into the application
+dep = dependency1()
+app.inject_dependency("depname", dep)
+
+# Define a route handler that uses the injected dep
+@app.get("/")
+def example_handler(request):
+    # Access the injected  dependency
+    dep = app.get_dependency("depname")
+    
+    return str(dep)
+
+# Start the application
+app.start()
+"""
+
+"""
+from robyn import Robyn
+from robyn.router import Router
+
+# Create your application instance
+app = Robyn(__file__)
+
+# Define a custom dependency to simulate a database
+class Database:
+    def __init__(self):
+        self.data = []  # Array to store database records
+
+    def insert(self, record):
+        self.data.append(record)
+
+    def get_all(self):
+        return self.data
+
+# Inject the custom dependency into the router
+router = Router()
+database = Database()
+router.inject_dependency("db", database)
+
+# Define a route handler that uses the injected database
+@app.get("/example")
+def example_handler(request):
+    # Access the injected database dependency
+    db = router.get_dependency("db")
+
+    # Insert a record into the database
+    record = {"id": 1, "name": "John Doe"}
+    db.insert(record)
+
+    # Retrieve all records from the database
+    all_records = db.get_all()
+
+    return str(all_records)
+
+
+# Start the application
+app.start()
+"""
+
+
+from robyn import Robyn
+from robyn.router import Router
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+# Create your application instance
+app = Robyn(__file__)
+
+# Define the SQLAlchemy database model
+Base = declarative_base()
+
+class Record(Base):
+    __tablename__ = 'records'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    def __str__(self):
+        return f"Record(id={self.id}, name='{self.name}')"
+
+# Set up the SQLAlchemy database connection
+engine = create_engine('sqlite:///mydatabase.db')
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# Inject the database session into the router
+router = Router()
+router.inject_dependency("session", session)
+
+# Define a route handler that uses the injected database session
+@app.get("/")
+def example_handler(request):
+    # Access the injected database session
+    db_session = router.get_dependency("session")
+
+    # Create a new record
+    record = Record(name="kino")
+    db_session.add(record)
+    db_session.commit()
+
+    # Retrieve all records from the database
+    all_records = db_session.query(Record).all()
+
+    return "\n".join(str(record) for record in all_records)
+
+
+# Start the application
+app.start()
+
+
